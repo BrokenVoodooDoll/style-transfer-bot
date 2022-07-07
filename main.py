@@ -1,17 +1,16 @@
 import logging
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
-from PIL import Image
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, \
+    MessageHandler, filters
 from style_transfer import style_transfer
 from enum import Enum
-
+import os.path as osp
 
 class State(Enum):
-    IDLE = 0
-    CHOOSING_CONTENT = 1
-    CHOOSING_STYLE = 2
+    CHOOSING_CONTENT = 0
+    CHOOSING_STYLE = 1
 
-state = State
+STATE = State.CHOOSING_CONTENT
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -21,18 +20,39 @@ logging.basicConfig(
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id,
         text="This bot transfers style from one photograph to another. \
-        Send me two photos: a content image and a style image. \
-        The order is important!")
+Send me two photos: a content image and a style image. \
+The order is important!")
+
+async def download_image(update: Update, img_name: str):
+    photo = update.message.photo[-1]
+    file = await photo.get_file()
+    await file.download(img_name)
+    return photo['height']
+
+async def transfer_style(update: Update, context: ContextTypes.DEFAULT_TYPE, img_height):
+    output_img = await style_transfer("content.jpg", "style.jpg", img_height)
+    with open(output_img, 'rb') as im:
+        await context.bot.send_photo(chat_id=update.effective_chat.id,
+            photo=im)
 
 async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(update.message.photo)
+    global STATE
 
-    file = await update.message.photo[-1].get_file()
-    await file.download("./photo.jpeg")
-
-    # await context.bot.send_message(chat_id=update.effective_chat.id, text="Please wait. This may take a while...")
-    # await style_transfer('figures.jpg', 'vg_starry_night.jpg')
-    # await context.bot.send_message(chat_id=update.effective_chat.id, text="Got it")
+    img_root = "neural_style_transfer/data"
+    content_img = osp.join(img_root, "content-images/content.jpg")
+    style_img = osp.join(img_root, "style-images/style.jpg")
+    img_height = 400
+    if STATE == State.CHOOSING_CONTENT:
+        img_height = await download_image(update, content_img)
+        # await context.bot.send_message(chat_id=update.effective_chat.id,
+            # text="Now send a style image")
+        STATE = State.CHOOSING_STYLE
+    elif STATE == State.CHOOSING_STYLE:
+        STATE = State.CHOOSING_CONTENT
+        await download_image(update, style_img)
+        await context.bot.send_message(chat_id=update.effective_chat.id,
+            text="Please wait. This may take a while...")
+        await transfer_style(update, context, img_height)
 
 
 if __name__ == '__main__':

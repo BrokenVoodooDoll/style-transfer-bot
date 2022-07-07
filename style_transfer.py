@@ -123,10 +123,7 @@ def neural_style_transfer(config):
 
     return dump_path
 
-    # parser.add_argument("--content_img_name", type=str, help="content image name", default='figures.jpg')
-    # parser.add_argument("--style_img_name", type=str, help="style image name", default='vg_starry_night.jpg')
-
-async def style_transfer(content_img_name, style_img_name):
+async def style_transfer(content_img_name, style_img_name, img_height):
     default_resource_dir = os.path.join(os.path.dirname(__file__), 'neural_style_transfer/data')
     content_images_dir = os.path.join(default_resource_dir, 'content-images')
     style_images_dir = os.path.join(default_resource_dir, 'style-images')
@@ -134,7 +131,7 @@ async def style_transfer(content_img_name, style_img_name):
     img_format = (4, '.jpg')  # saves images in the format: %04d.jpg
     
     optimization_config = {
-        'height': 400, # change to height of source image
+        'height': img_height, # change to height of source image
         'content_weight':  1e5,
         'style_weight':  3e4,
         'tv_weight':  1e0,
@@ -151,3 +148,5 @@ async def style_transfer(content_img_name, style_img_name):
     optimization_config['img_format'] = img_format
 
     results_path = neural_style_transfer(optimization_config)
+    out_img_name = utils.generate_out_img_name(optimization_config)
+    return os.path.join(results_path, out_img_name)
