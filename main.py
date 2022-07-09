@@ -30,7 +30,8 @@ async def download_image(update: Update, img_name: str):
     return photo['height']
 
 async def transfer_style(update: Update, context: ContextTypes.DEFAULT_TYPE, img_height):
-    output_img = await style_transfer("content.jpg", "style.jpg", img_height)
+    output_img = style_transfer("content.jpg", "style.jpg", img_height)
+    
     with open(output_img, 'rb') as im:
         await context.bot.send_photo(chat_id=update.effective_chat.id,
             photo=im)
@@ -44,16 +45,13 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     img_height = 400
     if STATE == State.CHOOSING_CONTENT:
         img_height = await download_image(update, content_img)
-        # await context.bot.send_message(chat_id=update.effective_chat.id,
-            # text="Now send a style image")
         STATE = State.CHOOSING_STYLE
     elif STATE == State.CHOOSING_STYLE:
         STATE = State.CHOOSING_CONTENT
         await download_image(update, style_img)
         await context.bot.send_message(chat_id=update.effective_chat.id,
-            text="Please wait. This may take a while...")
+            text="Please wait. This may take a while...")   
         await transfer_style(update, context, img_height)
-
 
 if __name__ == '__main__':
     with open('token.txt', 'rt') as f:

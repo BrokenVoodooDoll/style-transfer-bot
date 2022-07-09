@@ -123,7 +123,7 @@ def neural_style_transfer(config):
 
     return dump_path
 
-async def style_transfer(content_img_name, style_img_name, img_height):
+def style_transfer(content_img_name, style_img_name, img_height):
     default_resource_dir = os.path.join(os.path.dirname(__file__), 'neural_style_transfer/data')
     content_images_dir = os.path.join(default_resource_dir, 'content-images')
     style_images_dir = os.path.join(default_resource_dir, 'style-images')
