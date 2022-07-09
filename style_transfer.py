@@ -123,7 +123,7 @@ def neural_style_transfer(config):
 
     return dump_path
 
-def style_transfer(content_img_name, style_img_name, img_height):
+def style_transfer(content_img_name, style_img_name):
     default_resource_dir = os.path.join(os.path.dirname(__file__), 'neural_style_transfer/data')
     content_images_dir = os.path.join(default_resource_dir, 'content-images')
     style_images_dir = os.path.join(default_resource_dir, 'style-images')
@@ -131,7 +131,7 @@ def style_transfer(content_img_name, style_img_name, img_height):
     img_format = (4, '.jpg')  # saves images in the format: %04d.jpg
     
     optimization_config = {
-        'height': img_height, # change to height of source image
+        'height': 400, # change to height of source image
         'content_weight':  1e5,
         'style_weight':  3e4,
         'tv_weight':  1e0,

@@ -29,8 +29,8 @@ async def download_image(update: Update, img_name: str):
     await file.download(img_name)
     return photo['height']
 
-async def transfer_style(update: Update, context: ContextTypes.DEFAULT_TYPE, img_height):
-    output_img = style_transfer("content.jpg", "style.jpg", img_height)
+async def transfer_style(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    output_img = style_transfer("content.jpg", "style.jpg")
     
     with open(output_img, 'rb') as im:
         await context.bot.send_photo(chat_id=update.effective_chat.id,
@@ -42,7 +42,6 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     img_root = "neural_style_transfer/data"
     content_img = osp.join(img_root, "content-images/content.jpg")
     style_img = osp.join(img_root, "style-images/style.jpg")
-    img_height = 400
     if STATE == State.CHOOSING_CONTENT:
         img_height = await download_image(update, content_img)
         STATE = State.CHOOSING_STYLE
@@ -51,7 +50,7 @@ async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await download_image(update, style_img)
         await context.bot.send_message(chat_id=update.effective_chat.id,
             text="Please wait. This may take a while...")   
-        await transfer_style(update, context, img_height)
+        await transfer_style(update, context)
 
 if __name__ == '__main__':
     with open('token.txt', 'rt') as f:
